@@ -20,6 +20,7 @@ module Puppet
 
       def initialize(settings)
         @settings = settings
+        write_systest_config_file()
       end
 
       def perform(step, arguments = nil)
@@ -44,7 +45,6 @@ module Puppet
         ENV['pe_dist_dir'] = PE_LOCATION[version]
 
         run 'pe_uninstall.sh', @settings[:puppet_master], @settings[:ssh_keyfile]
-        write_systest_config_file()
         run "pe_install.sh", @settings[:systest_config], @settings[:ssh_keyfile]
       end
 
@@ -53,8 +53,8 @@ module Puppet
         scenario = arguments["scenario"]
         filename = write_scenario_to_file(sim_id, scenario)
 
-        run "pe_restart.sh", @settings[:systest_config], @settings[:ssh_keyfile]
-        run "pe_classify.sh", filename, @settings[:systest_config], @settings[:ssh_keyfile], sim_id
+        # run "pe_restart.sh", @settings[:systest_config], @settings[:ssh_keyfile]
+        # run "pe_classify.sh", filename, @settings[:systest_config], @settings[:ssh_keyfile], sim_id
         run 'sbt.sh', sim_id, @settings[:puppet_master], filename, @settings[:sbtpath]
       end
 
