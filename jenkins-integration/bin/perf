@@ -9,11 +9,14 @@ module Puppet
         '3.2' => 'http://neptune.delivery.puppetlabs.net/3.2/ci-ready',
         '3.1' => 'http://neptune.delivery.puppetlabs.net/3.1/ci-ready',
         '3.0' => 'http://neptune.delivery.puppetlabs.net/archives/releases/3.0.1',
-        '2.8' => 'http://neptune.delivery.puppetlabs.net/archives/releases/2.8.3'
+        '2.8' => 'http://neptune.delivery.puppetlabs.net/archives/releases/2.8.3',
+        'pe-32-ruby21' => 'http://neptune.delivery.puppetlabs.net/build-tools/new-ruby-experiment/pe-32-ruby21.tar.gz',
+        'pe-32' => 'http://neptune.delivery.puppetlabs.net/build-tools/new-ruby-experiment/pe-32.tar.gz'
       }
 
       SUPPORTED_STEPS = {
         "install"           => :install,
+        "install_ruby_exp"  => :install_ruby_exp,
         "simulate"          => :simulate,
         "cobbler-provision" => :cobbler_provision
       }
@@ -40,9 +43,12 @@ module Puppet
         run 'cobbler_provision.sh', @settings[:master_ip], @settings[:ssh_keyfile], @settings[:target]
       end
 
+      def install_ruby_exp(version)
+        run 'install-ruby-exp.sh', PE_LOCATION[version], version, @settings[:master_hostname]
+      end
+
       def install(version)
         ENV['pe_dist_dir'] = PE_LOCATION[version]
-
         run 'pe_uninstall.sh', @settings[:puppet_master], @settings[:ssh_keyfile]
         write_systest_config_file()
         run "pe_install.sh", @settings[:systest_config], @settings[:ssh_keyfile]
@@ -53,8 +59,8 @@ module Puppet
         scenario = arguments["scenario"]
         filename = write_scenario_to_file(sim_id, scenario)
 
-        run "pe_restart.sh", @settings[:systest_config], @settings[:ssh_keyfile]
-        run "pe_classify.sh", filename, @settings[:systest_config], @settings[:ssh_keyfile], sim_id
+        # run "pe_restart.sh", @settings[:systest_config], @settings[:ssh_keyfile]
+        # run "pe_classify.sh", filename, @settings[:systest_config], @settings[:ssh_keyfile], sim_id
         run 'sbt.sh', sim_id, @settings[:puppet_master], filename, @settings[:sbtpath]
       end
 
